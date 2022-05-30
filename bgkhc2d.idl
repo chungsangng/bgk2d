@@ -1,0 +1,275 @@
+unit = 9
+loadct,39
+ch = [' ','!7u!6','!8A!6','!7X!6','!8J!6']
+ch1 = 'abc'
+openr,unit,'bgkhc2didl.o1'
+for i = 0,20 do readf,unit,ch1
+readf,unit,n
+readf,unit,iout
+readf,unit,h0
+readf,unit,k
+readf,unit,b0
+readf,unit,be2
+readf,unit,xi
+readf,unit,az0
+readf,unit,rpl
+readf,unit,vmin
+readf,unit,vmax
+readf,unit,nv
+readf,unit,dr
+j = n/iout
+nrho = j/nv
+; print,j
+for i = 0,5 do readf,unit,ch1
+r=fltarr(j)
+p=r
+pl = p
+q=r
+g=r
+rho=r
+az=r
+bp=r
+ap=r
+bz=r
+ene=r
+vp=r
+vz=r
+te=r
+tez=r
+tep=r
+bt=r
+qt=r
+rhot=r
+jp=r
+jz=r
+ed=r
+theta=r
+xvp=fltarr(nv+1)
+xrho=fltarr(nv+1)
+dv=(vmax-vmin)/nv
+for i=0,nv do xvp(i)=vmin+1.*i*dv
+for i=0,nv do xrho(i)=i*iout*nrho*dr
+yvz=xvp
+fe=fltarr(nv+1,nv+1)
+fe1=fe
+fe2=fe
+fe3=fe
+for i = 0,j-1 do begin readf,unit,format='(14(e18.8,x))',t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14 & r(i)=t1 & p(i)=t2 & q(i)=t3 & g(i)=t4 & rho(i)=t5 & az(i)=t6 & bp(i)=t7 & ap(i)=t8 & bz(i)=t9 & ene(i)=t10 & vp(i)=t11 & vz(i)=t12 & te(i)=t13 & tez(i)=t14 & tep(i)=(3.*te(i)-tez(i))/2. & pl(i) = alog(1./g(i)) & jp(i)=-ene(i)*vp(i) & jz(i)=-ene(i)*vz(i) & ed(i)=vz(i)*bp(i)-vp(i)*bz(i) & theta(i) = atan(bp(i)/bz(i)) & end
+readf,unit,ch1
+readf,unit,ch1
+readf,unit,fe
+readf,unit,ch1
+readf,unit,fe1
+readf,unit,ch1
+readf,unit,fe2
+readf,unit,ch1
+readf,unit,fe3
+bt(0) = bz(0)
+qt(0) = q(0)
+rhot(0) = rho(0)
+dr = r(2) - r(0)
+dr2 = (dr/2.)*(dr/2.)
+for i = 1,j-2 do begin bt(i) = (r(i+1)*ap(i+1)-r(i-1)*ap(i-1))/dr/r(i) & qt(i) = (p(i+1)-p(i-1))/dr & rhot(i) = -(q(i+1)-q(i-1))/dr - (p(i+1)-p(i-1))/r(i)/dr & end
+;print,rhot(0)
+;print,rhot(1)
+;print,rhot(2)
+bt(j-1) = bz(j-1)
+qt(j-1) = q(j-1)
+rhot(j-1) = rho(j-1)
+close,unit
+set_plot,'ps'
+device,filename='bgkhc2d.ps',/color, bits = 8,xsize = 20,ysize = 25,$
+xoffset = 2, yoffset = 2
+!p.multi = [0,2,4]
+xyouts,0.,0.,'!6',size=1,/device
+;
+plot,r,p,$
+position = [4000,18750,9000,23750],/device,charsize = 1.5;,xrange=[0.,zmax],yrange=[0.,rmax]
+xyouts,3000,22750,'!7w!6',size=2,/device,ALIGNMENT=1.0
+;oplot,r,pl,linestyle=1
+;
+plot,r,q,$
+position = [12000,18750,17000,23750],/device,charsize = 1.5;,xrange=[0.,zmax],yrange=[0.,rmax]
+xyouts,11000,22750,'!6d!7w!6',size=2,/device,ALIGNMENT=1.0
+;oplot,r,qt,linestyle=1
+;
+plot,r,g,$
+position = [4000,12500,9000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1,rmax]
+xyouts,3000,16500,'!8g!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,rho,$
+position = [12000,12500,17000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1.,rmax]
+xyouts,11000,16500,'!7q!8!Dq!6',size=2,/device,ALIGNMENT=1.0
+;oplot,r,rhot,linestyle=1
+;
+plot,r,ap,$
+position = [4000,6250,9000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,3000,10250,'!8A!D!7u!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,bz,$
+position = [12000,6250,17000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,11000,10250,'!8B!Dz!6',size=2,/device,ALIGNMENT=1.0
+;oplot,r,bt,linestyle=1
+;
+rr = fltarr(j-1)
+pp=rr
+ppl=rr
+qq=rr
+gg=rr
+rrho=rr
+pfit=rr
+aa=rr
+bb=rr
+;for i = 0,j-2 do begin rr(i) = r(i+1) & pp(i)=abs(p(i+1)) & qq(i) = abs(q(i+1)) & gg(i)=abs(1.-g(i+1)) & aa(i) = abs(ap(i+1)) & bb(i) = abs(bz(i+1)) & rrho(i)=abs(rho(i+1)) & pfit(i)=abs(x0*x0*(1.-g0)/2.)/rr(i)/rr(i) & end
+for i = 0,j-2 do begin rr(i) = r(i+1) & pp(i)=abs(p(i+1)) & ppl(i)=abs(pl(i+1)) & qq(i) = abs(q(i+1)) & gg(i)=abs(1.-g(i+1)) & rrho(i)=abs(rho(i+1)) & aa(i) = abs(ap(i+1)) & bb(i) = abs(bz(i+1)) & end
+q(0) = q(1)
+;
+plot_oo,rr,pp,$
+position = [4000,0,9000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,3000,4000,'!7w!6',size=2,/device,ALIGNMENT=1.0
+oplot,rr,ppl,linestyle=1
+;
+plot_oo,rr,qq,$
+position = [12000,0,17000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,11000,4000,'!6d!7w!6',size=2,/device,ALIGNMENT=1.0
+;
+xyouts,0,24000,'!8h!D!60!N',/device
+xyouts,0,23500,h0,/device,ALIGNMENT=0.5
+xyouts,0,23000,'!8b!D!60!N',/device
+xyouts,0,22500,b0,/device,ALIGNMENT=0.5
+xyouts,0,22000,'!8j!6',/device
+xyouts,0,21500,j,/device,ALIGNMENT=0.5
+xyouts,0,21000,'!8k!6',/device
+xyouts,0,20500,k,/device,ALIGNMENT=0.5
+xyouts,0,20000,'!7b!D!8e!U!62!N!6',/device
+xyouts,0,19500,be2,/device,ALIGNMENT=0.5
+xyouts,0,19000,'!7n!6',/device
+xyouts,0,18500,xi,/device,ALIGNMENT=0.5
+xyouts,0,18000,'!8a!Dz!60!N',/device
+xyouts,0,17500,az0,/device,ALIGNMENT=0.5
+xyouts,0,17000,'!7q!6',/device
+xyouts,0,16500,rpl,/device,ALIGNMENT=0.5
+;xyouts,0,16000,'!7q!D!8s!N!6',/device
+;xyouts,0,15500,rhos2^0.5,/device,ALIGNMENT=0.5
+;xyouts,0,15000,'!8E!Db!6!N',/device
+;xyouts,0,14500,ae,/device,ALIGNMENT=0.5
+;
+plot_io,rr,pp,$
+position = [4000,6250,9000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,20.]
+xyouts,3000,10250,'!7w!6',size=2,/device,ALIGNMENT=1.0
+oplot,rr,ppl,linestyle=1
+;oplot,rr,pfit,linestyle=1
+;
+plot_io,rr,aa,$
+position = [4000,12500,9000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1,rmax]
+xyouts,3000,16500,'!8A!D!7u!6',size=2,/device,ALIGNMENT=1.0
+;
+plot_io,rr,bb,$
+position = [12000,12500,17000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1.,rmax]
+xyouts,11000,16500,'!8B!Dz!6',size=2,/device,ALIGNMENT=1.0
+;
+plot_io,rr,qq,$
+position = [12000,6250,17000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,20.]
+xyouts,11000,10250,'!6d!7w!6',size=2,/device,ALIGNMENT=1.0
+;
+plot_io,rr,gg,$
+position = [4000,0,9000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,20.]
+xyouts,3000,4000,'!61-!8g!6',size=2,/device,ALIGNMENT=1.0
+;
+plot_io,rr,rrho,$
+position = [12000,0,17000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,20.]
+xyouts,11000,4000,'!7q!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,az,$
+position = [4000,18750,9000,23750],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,3000,22750,'!8A!Dz!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,bp,$
+position = [12000,18750,17000,23750],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,11000,22750,'!8B!D!7u!6',size=2,/device,ALIGNMENT=1.0
+;
+;
+plot,r,vp,$
+position = [4000,18750,9000,23750],/device,charsize = 1.5;,xrange=[0.,zmax],yrange=[0.,rmax]
+xyouts,3000,22750,'!8v!D!7u!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,vz,$
+position = [12000,18750,17000,23750],/device,charsize = 1.5;,xrange=[0.,zmax],yrange=[0.,rmax]
+xyouts,11000,22750,'!8v!Dz!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,te,$
+position = [4000,12500,9000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1,rmax]
+xyouts,3000,16500,'!8T!De!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,jp,$
+position = [12000,12500,17000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1.,rmax]
+xyouts,11000,16500,'!8J!D!7u!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,jz,$
+position = [4000,6250,9000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,3000,10250,'!8J!Dz!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,ed,$
+position = [12000,6250,17000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,11000,10250,'!8E!Dd!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,tez,$
+position = [4000,0,9000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,3000,4000,'!8T!Dez!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,tep,$
+position = [12000,0,17000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+xyouts,11000,4000,'!8T!De!9x!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,theta,$
+position = [4000,18750,9000,23750],/device,charsize = 1.5;,xrange=[0.,zmax],yrange=[0.,rmax]
+xyouts,3000,22750,'!7h!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,bz,bp,$
+position = [12000,18750,17000,23750],/device,charsize = 1.5;,xrange=[0.,zmax],yrange=[0.,rmax]
+xyouts,11000,22750,'!8B!6',size=2,/device,ALIGNMENT=1.0
+;
+plot,r,ene,$
+position = [4000,12500,9000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1,rmax]
+xyouts,3000,16500,'!8n!De!6',size=2,/device,ALIGNMENT=1.0
+;
+nl = 30
+nc=31
+ns = 8.
+nb = 0.
+m = 3
+mp=max(fe)&np=min(fe)&lv = np+(mp-np)*findgen(nl+1)/nl & lc = ns*indgen(nc)+nb
+contour,fe,xvp,yvz,levels=lv,c_colors = lc,/fill,$
+position = [12000,12500,17000,17500],/device,charsize = 1.5;,xrange=[1,zmax],yrange=[1.,rmax]
+oplot,[xvp(0),xvp(nv)],[0.,0.]
+oplot,[0.,0.],[yvz(0),yvz(nv)]
+xyouts,1.6,-2.3,'!8v!D!7u!6',size=1,ALIGNMENT=1.0
+xyouts,-2.2,1.4,'!8v!Dz!6',size=1,ALIGNMENT=1.0
+;
+mp=max(fe1)&np=min(fe1)&lv = np+(mp-np)*findgen(nl+1)/nl & lc = ns*indgen(nc)+nb
+contour,fe1,xvp,yvz,levels=lv,c_colors = lc,/fill,$
+position = [4000,6250,9000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+oplot,[xvp(0),xvp(nv)],[0.,0.]
+oplot,[0.,0.],[yvz(0),yvz(nv)]
+xyouts,1.6,-2.3,'!8v!D!7u!6',size=1,ALIGNMENT=1.0
+xyouts,-2.2,1.4,'!8v!Dz!6',size=1,ALIGNMENT=1.0
+;
+mp=max(fe3)&np=min(fe3)&lv = np+(mp-np)*findgen(nl+1)/nl & lc = ns*indgen(nc)+nb
+contour,fe3,xrho,xvp,levels=lv,c_colors = lc,/fill,$
+position = [12000,6250,17000,11250],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+oplot,[0.,xrho(nv)],[0.,0.]
+xyouts,46,-2.4,'!7q!6',size=1,ALIGNMENT=1.0
+xyouts,-rpl/2.,1.4,'!8v!D!7u!6',size=1,ALIGNMENT=1.0
+;
+mp=max(fe2)&np=min(fe2)&lv = np+(mp-np)*findgen(nl+1)/nl & lc = ns*indgen(nc)+nb
+contour,fe2,xrho,yvz,levels=lv,c_colors = lc,/fill,$
+position = [4000,0,9000,5000],/device,charsize = 1.5;,yrange=[0.00000001,1.],xrange=[0.01,10.]
+oplot,[0.,xrho(nv)],[0.,0.]
+xyouts,46,-2.4,'!7q!6',size=1,ALIGNMENT=1.0
+xyouts,-rpl/2.,1.4,'!8v!Dz!6',size=1,ALIGNMENT=1.0
+;
+!p.multi =0
+device,/close
+set_plot,'x'
+close,unit
+
